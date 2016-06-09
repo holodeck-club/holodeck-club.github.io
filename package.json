@@ -3,7 +3,9 @@
   "license": "Creative Commons Attribution 3.0 Unported License",
   "devDependencies": {
     "browser-sync": "^2.12.8",
-    "jspm": "^0.16.34"
+    "jspm": "^0.16.34",
+    "readdirp": "^2.0.0",
+    "recursive-readdir": "^2.0.0"
   },
   "scripts": {
     "start": "npm run dev",
