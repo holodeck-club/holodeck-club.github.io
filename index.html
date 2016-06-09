@@ -206,8 +206,8 @@
 				</div>
 			</footer>
 
-			<script type="text/x-nunjucks-template">
-				<section id="{{ slug }}" class="group group--{{ slug }}" data-slug="{{ slug {}}">
+			<script id="group-template" type="text/x-nunjucks-template">
+				<section id="{{ slug }}" class="group group--{{ slug }}" data-slug="{{ slug }}">
 					{% if icons and icons|length %}
 						<a href="{{ url }}" class="image"><img src="{{ icons[icons|length - 1].src }}" alt="{{ name }}" data-position="center center"></a>
 					{% endif %}
@@ -215,11 +215,13 @@
 						<div class="inner">
 							<h2><a href="{{ path }}">{{ name }}</a> <a href="{{ git.repo_url }}" class="icon fa-github-square github-link fancy-link fancy-link--light"></a></h2>
 							<p>{{ description }}</p>
-							<ul id="{{ slug }}__list" class="actions block dirlist">
-								<li><a href="/mozillavr/links/" class="button">Link orbs</a></li>
-								<li><a href="/mozillavr/multiuser/" class="button">Dodgeball</a></li>
-								<li><a href="/mozillavr/multiuser/" class="button">Wikipedia</a></li>
-							</ul>
+							{% if links and links|length %}
+								<ul id="{{ slug }}__list" class="actions block dirlist">
+									{% for link in links %}
+										<li data-slug="{{ link.slug }}"><a href="{{ link.url }}" class="button">{{ link.name }}</a></li>
+									{% endfor %}
+								</ul>
+							{% endif %}
 						</div>
 					</div>
 				</section>

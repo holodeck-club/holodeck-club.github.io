@@ -1,22 +1,47 @@
-/* global localforage */
+/* global localforage, nunjucks */
 (function () {
   if (!('Promise' in window)) {
     injectPackage('es6-promise');
   }
 
   var manifests = window.manifests = [];
+  var sectionManifests = {};
 
-  function addManifest (manifest) {
-    var ul = document.querySelector('.group[data-slug="' + manifest.slug + '"]');
-    console.log('ul', manifest, ul);
-    if (!ul) {
-      return;
+  var groupTemplateHtml = document.querySelector('#group-template').innerHTML;
+  var groupTemplate;
+
+  var exploreSection = document.querySelector('#explore');
+
+  function getGroupBySlug (slug) {
+    return document.querySelector('.group[data-slug="' + slug + '"]');
+  }
+
+  function createOrGetGroup (manifest) {
+    var group = getGroupBySlug(manifest.slug);
+    if (!group) {
+      var groupHtml = groupTemplate.render(manifest);
+      exploreSection.insertAdjacentHTML('beforeend', groupHtml);
+      group = getGroupBySlug(manifest.slug);
     }
+    return group;
+  }
+
+  function createOrAddItem (manifest) {
+    console.log('manifest', manifest);
+
+    var group = createOrGetGroup(manifest.is_parent ? manifest : manifest.section);
+
     var li = document.createElement('li');
+    li.textContent = manifest.name;
+    li.setAttribute('data-slug', manifest.slug);
     li.setAttribute('href', manifest.url);
-    ul.appendChild(li);
-    manifests.push(manifest);
-    return manifest;
+    group.appendChild(li);
+
+    console.log(li);
+
+    group.querySelector('.dirlist').appendChild(li);
+
+    return li;
   }
 
   function injectScripts (srcs) {
@@ -37,6 +62,10 @@
 
   function injectPackage (pkgName) {
     return injectScript('https://wzrd.in/standalone/' + pkgName);
+  }
+
+  function injectPackages (pkgNames) {
+    return pkgNames.map(injectPackage);
   }
 
   function createScript (src) {
@@ -152,13 +181,20 @@
   BRANCH = 'deux';
   var DIR_BLACKLIST = ['assets', 'common', 'node_modules', 'test', 'tests'];
 
-  injectPackage('localforage').then(initDirectory);
+  Promise.all([
+    injectPackage('localforage'),
+    injectScript('https://cdnjs.cloudflare.com/ajax/libs/nunjucks/2.4.2/nunjucks.min.js')
+  ]).then(initDirectory);
 
   function initDirectory () {
+    console.log('initDirectory')
+    groupTemplate = nunjucks.compile(groupTemplateHtml);
+
     getJSON(API_BASE_URL + '/git/refs/heads/' + BRANCH).then(function gotRefs (data) {
       console.log('data', data);
       return getJSON(API_BASE_URL + '/git/trees/' + data.object.sha + '?recursive=1');
     }).then(function gotTree (data) {
+      var manifestsFetched = [];
       data.tree.forEach(function (file) {
         var pathChunks = file.path.split('/');
         if (!file ||
@@ -170,31 +206,53 @@
           return;
         }
 
-        getManifest(file.path).then(function (manifest) {
+        manifestsFetched.push(getManifest(file.path).then(function (manifest) {
           manifest.git = {
             repo: GH_REPO,
             repo_url: GH_REPO_URL,
             path: file.path,
             sha: file.sha.substr(0, 8)
           };
-          addManifest(manifest);
-        });
+          return manifest;
+        }));
+      });
+
+      Promise.all(manifestsFetched).then(function (manifests) {
+        manifests.map(createOrAddItem);
       });
     });
   }
 
   function getManifest (dirName) {
     // TODO: Fetch real manifest.
+    var dirChunks = dirName.split('/');
+
+    var name = dirChunks[dirChunks.length - 1].replace(/[-_]/g, ' ');
+    var slug = dirName;
     var path = '/' + dirName + '/';
-    var basePath = path.split('/')[0] + '/';
-    return Promise.resolve({
-      name: dirName,
-      slug: dirName,
+    var url = BASE_WWW_URL + path;
+
+    var sectionSlug = dirChunks[0];
+    var sectionPath = '/' + sectionSlug + '/';
+    var sectionUrl = BASE_WWW_URL + sectionPath;
+
+    var manifest = {
+      name: name,
+      slug: slug,
       path: path,
-      base_path: basePath,
-      url: BASE_WWW_URL + path,
-      base_url: BASE_WWW_URL + basePath
-    });
+      url: url,
+      section: {},
+      is_parent: slug === sectionSlug
+    };
+
+    if (manifest.is_parent) {
+      manifest.section = manifest;
+      sectionManifests[slug] = manifest;
+    } else {
+      manifest.section = sectionManifests[sectionSlug];
+    }
+
+    return Promise.resolve(manifest);
   }
 
   function looksLikeAUrl (url) {
