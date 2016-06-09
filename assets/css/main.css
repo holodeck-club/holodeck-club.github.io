@@ -3953,6 +3953,10 @@ a.fancy-link:hover,
 	opacity: 1;
 }
 
+.github-link {
+	margin-left: 1rem;
+}
+
 .actions.block li {
 	display: block;
 }
@@ -3967,5 +3971,3 @@ a.fancy-link:hover,
 	background-repeat: no-repeat;
 	background-size: 70% auto;
 }
-
-.spotlights > section.group--mozilla > .image {

@@ -67,22 +67,32 @@ opts.middleware.push(function (req, res, next) {
     return next();
   }
   var pathname = urllib.parse(req.url).pathname;
-  if ((pathname.indexOf('manifest.json') > -1 ||
-       pathname.indexOf('.css') > -1 ||
-       pathname.indexOf('.js') > -1)) {
+  var isManifest = pathname.indexOf('manifest.json') > -1;
+  var isCSS = pathname.indexOf('.css') > -1;
+  var isJS = pathname.indexOf('.js') > -1;
+  if (isManifest || isCSS || isJS) {
     // Rewrite `holodeck.club` URLs.
     var readableStream = fs.createReadStream(
-      path.join(__dirname, req.originalUrl),
+      path.join(__dirname, pathname),
       {encoding: 'utf8'}
     );
+    var mimeType = 'text/plain';
+    if (isManifest) {
+      mimeType = 'application/manifest+json';
+    } else if (isCSS) {
+      mimeType = 'text/css';
+    } else if (isJS) {
+      mimeType = 'text/js';
+    }
     var data = '';
     var chunk;
+    res.writeHead(200, {'Content-Type': mimeType});
     readableStream.on('readable', function () {
       while ((chunk = readableStream.read()) !== null) {
         data += chunk;
       }
     });
-    readableStream.on('end', function() {
+    readableStream.on('end', function () {
       res.end(data.replace(REMOTE_URL_REGEX, REMOTE_URL_REGEX_REPLACER));
     });
     return;

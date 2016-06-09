@@ -1,13 +1,14 @@
+/* global localforage */
 (function () {
   if (!('Promise' in window)) {
-    injectScript('https://wzrd.in/standalone/es6-promise');
+    injectPackage('es6-promise');
   }
 
   var manifests = window.manifests = [];
 
   function addManifest (manifest) {
-    var ul = document.querySelector('.dirlist[data-base-path="' + manifest.path + '"]');
-    console.log('ul', manifest.path, ul);
+    var ul = document.querySelector('.group[data-slug="' + manifest.slug + '"]');
+    console.log('ul', manifest, ul);
     if (!ul) {
       return;
     }
@@ -18,15 +19,24 @@
     return manifest;
   }
 
-  function injectScript (srcs) {
-    if (!Array.isArray(srcs)) {
-      srcs = [srcs];
+  function injectScripts (srcs) {
+    return (srcs || []).map(injectScript);
+  }
+
+  function injectScript (src) {
+    if (Array.isArray(src)) {
+      return injectScripts(src);
     }
-    var script;
-    (srcs || []).forEach(function (src) {
-      script = typeof src === 'string' ? createScript(src) : src;
+    return new Promise(function (resolve, reject) {
+      var script = typeof src === 'string' ? createScript(src) : src;
+      script.addEventListener('load', resolve);
+      script.addEventListener('error', reject);
       document.head.appendChild(script);
     });
+  }
+
+  function injectPackage (pkgName) {
+    return injectScript('https://wzrd.in/standalone/' + pkgName);
   }
 
   function createScript (src) {
@@ -36,57 +46,154 @@
     return s;
   }
 
-  function getJSON (url, cb) {
-    return new Promise(function (resolve, reject) {
-      var xhr = new XMLHttpRequest();
-      xhr.open('get', url);
-      xhr.addEventListener('load', function () {
-        try {
-          resolve(JSON.parse(this.responseText));
-        } catch (e) {
-          resolve({});
-        }
-      });
-      xhr.addEventListener('error', reject);
-      xhr.send();
+  function shouldCaptureKeyEvent (event) {
+    if (event.shiftKey || event.metaKey || event.altKey || event.ctrlKey) {
+      return false;
+    }
+    return document.activeElement === document.body;
+  }
+
+  var keyTimes = {};
+
+  window.addEventListener('keydown', function (e) {
+    if (e.keyCode in keyTimes) {
+      checkAndFlushCache(e);
+      return;
+    }
+    keyTimes[e.keyCode] = new Date().getTime();
+  });
+
+  window.addEventListener('keyup', function (e) {
+    if (e.keyCode in keyTimes) {
+      checkAndFlushCache(e);
+    }
+  });
+
+  function checkAndFlushCache (event) {
+    checkKeyTime(event, 'C'.charCodeAt(0), function () {
+      console.log('clearing local JSON cache');
+      localforage.clear();
+      setTimeout(function () {
+        window.location.reload();
+      }, 500);
     });
   }
 
-  var API_BASE_URL = 'https://api.github.com/repos/holodeck-club/holodeck-club.github.io';
+  function checkKeyTime (event, keyCode, cb) {
+    if (keyCode !== event.keyCode) {
+      return;
+    }
+    var thisKeyHeldTime = new Date().getTime() - keyTimes[event.keyCode];
+    if (thisKeyHeldTime >= 2000) {
+      delete keyTimes[event.keyCode];
+      cb();
+    }
+  }
+
+  function getJSON (url, skipRetry) {
+    return localforage.getItem(url).then(function (value) {
+
+      if (value !== null) {
+        console.log('value.__expires__', new Date().getTime() >= value.__expires__, '-', new Date().getTime(), '----', value.__expires__);
+        if (value.__expires__ && new Date().getTime() >= value.__expires__) {
+          console.log('cache expiry', url);
+          return localforage.removeItem(url).then(function () {
+            return getJSON(url);
+          });
+        }
+        console.log('cache hit', url, value);
+        delete value.__expires__;
+        return Promise.resolve(value);
+      }
+
+      console.log('cache miss', url);
+
+      return new Promise(function (resolve, reject) {
+        console.log('xhr get', url);
+        var xhr = new XMLHttpRequest();
+        xhr.open('get', url);
+        xhr.addEventListener('load', function () {
+          if (this.status >= 200 && this.status < 300) {
+            try {
+              resolve(JSON.parse(this.responseText));
+            } catch (e) {
+              resolve({});
+            }
+          } else {
+            reject(new Error(this.status));
+          }
+        });
+        xhr.addEventListener('error', function () {
+          reject(new Error(this.status));
+        });
+        xhr.send();
+
+      }).then(function (responseData) {
+
+        console.log('cache storing', url, '-', responseData);
+
+        responseData.__expires__ = new Date().getTime() + 1800000;  // 30 minutes
+
+        return localforage.setItem(url, responseData).then(function () {
+          console.log('cache stored!', url);
+          return responseData;
+        });
+
+      });
+
+    });
+  }
+
+  var GH_REPO = 'holodeck-club/holodeck-club.github.io';
+  var GH_REPO_URL = 'https://github.com/' + GH_REPO;
+  var API_BASE_URL = 'https://api.github.com/repos/' + GH_REPO;
   var BASE_WWW_URL = 'https://holodeck.club';
   var BRANCH = 'master';
   BRANCH = 'deux';
-  var DIR_BLACKLIST = ['assets', 'node_modules', 'test', 'tests'];
+  var DIR_BLACKLIST = ['assets', 'common', 'node_modules', 'test', 'tests'];
 
-  getJSON(API_BASE_URL + '/git/refs/heads/' + BRANCH).then(function gotRefs (data) {
-    return getJSON(API_BASE_URL + '/git/trees/' + data.object.sha + '?recursive=1');
-  }).then(function gotTree (data) {
-    data.tree.forEach(function (file) {
-      if (!file ||
-          file.path[0] === '.' ||
-          file.type !== 'tree' ||
-          DIR_BLACKLIST.indexOf(file.path.split('/')[0]) !== -1 ||
-          DIR_BLACKLIST.indexOf(file.path + '/') !== -1) {
-        return;
-      }
+  injectPackage('localforage').then(initDirectory);
 
-      getManifest(file.path).then(function (manifest) {
-        manifest.git = {
-          path: file.path,
-          sha: file.sha.substr(0, 8)
-        };
-        addManifest(manifest);
+  function initDirectory () {
+    getJSON(API_BASE_URL + '/git/refs/heads/' + BRANCH).then(function gotRefs (data) {
+      console.log('data', data);
+      return getJSON(API_BASE_URL + '/git/trees/' + data.object.sha + '?recursive=1');
+    }).then(function gotTree (data) {
+      data.tree.forEach(function (file) {
+        var pathChunks = file.path.split('/');
+        if (!file ||
+            file.path[0] === '.' ||
+            file.type !== 'tree' ||
+            DIR_BLACKLIST.indexOf(pathChunks[0]) !== -1 ||
+            DIR_BLACKLIST.indexOf(file.path + '/') !== -1 ||
+            pathChunks.length > 2) {
+          return;
+        }
+
+        getManifest(file.path).then(function (manifest) {
+          manifest.git = {
+            repo: GH_REPO,
+            repo_url: GH_REPO_URL,
+            path: file.path,
+            sha: file.sha.substr(0, 8)
+          };
+          addManifest(manifest);
+        });
       });
     });
-  });
+  }
 
   function getManifest (dirName) {
     // TODO: Fetch real manifest.
     var path = '/' + dirName + '/';
+    var basePath = path.split('/')[0] + '/';
     return Promise.resolve({
       name: dirName,
+      slug: dirName,
       path: path,
-      url: BASE_WWW_URL + path
+      base_path: basePath,
+      url: BASE_WWW_URL + path,
+      base_url: BASE_WWW_URL + basePath
     });
   }
 
@@ -128,16 +235,5 @@
     }
 
     return item;
-  }
-
-  function directoryLoaded () {
-    try {
-      data = JSON.parse(this.responseText);
-    } catch (e) {
-      return {};
-    }
-    data = Array.isArray(data.objects) ? data.objects : data;
-    data = data.map(sanitiseItem);
-    return data;
   }
 })();
