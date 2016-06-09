@@ -44,16 +44,15 @@
 					</section>
 
 					<section id="explore" class="wrapper style2 spotlights">
-						<section id="mozillavr" class="group group--mozilla">
-							<a href="/mozillavr/" class="image"><img src="assets/img/logo-mozilla-white.svg" alt="Mozilla" data-position="center center"></a>
+						<section>
+							<a href="/voxel/" class="image"><img src="assets/img/voxel.png" alt="Meditation" data-position="25% 25%" /></a>
 							<div class="content">
 								<div class="inner">
-									<h2><a href="/mozillavr/">Mozilla VR</a> <a href="https://github.com/holodeck-club/tree/mozillavr/" class="icon fa-github-square github-link fancy-link fancy-link--light"></a></h2>
-									<p>Selected experiments created by the Mozilla VR team.</p>
-									<ul id="mozillavr__dirlist" data-base-path="/mozillavr/" class="actions block dirlist">
-										<li><a href="/mozillavr/links/" class="button">Link orbs</a></li>
-										<li><a href="/mozillavr/multiuser/" class="button">Dodgeball</a></li>
-										<li><a href="/mozillavr/multiuser/" class="button">Wikipedia</a></li>
+									<h2>Voxel <a href="https://github.com/holodeck-club/voxel" class="icon fa-github-square github-link fancy-link fancy-link--light"></a></h2>
+									<p>Minecraft, Monument Valley, Voxel.js, MagicaVoxel. This is your home.</p>
+									<ul class="actions block">
+										<li><a href="http://hughsk.io/voxel-fall/" class="button">hughsk's Voxel Deck</a></li>
+										<li><a href="https://sandbox.donmccurdy.com/vr/island/" class="button">donmccurdy's Voxel Deck</a></li>
 									</ul>
 								</div>
 							</div>
@@ -66,19 +65,6 @@
 									<p>Kick back and relax. <br></p>
 									<ul class="actions">
 										<li><a href="/meditation/" class="button">SkyIslands <small>(by Erica Layton)</small></a></li>
-									</ul>
-								</div>
-							</div>
-						</section>
-						<section>
-							<a href="/voxel/" class="image"><img src="assets/img/voxel.png" alt="Meditation" data-position="25% 25%" /></a>
-							<div class="content">
-								<div class="inner">
-									<h2>Voxel <a href="https://github.com/holodeck-club/voxel" class="icon fa-github-square github-link fancy-link fancy-link--light"></a></h2>
-									<p>Minecraft, Monument Valley, Voxel.js, MagicaVoxel. This is your home.</p>
-									<ul class="actions block">
-										<li><a href="http://hughsk.io/voxel-fall/" class="button">hughsk's Voxel Deck</a></li>
-										<li><a href="https://sandbox.donmccurdy.com/vr/island/" class="button">donmccurdy's Voxel Deck</a></li>
 									</ul>
 								</div>
 							</div>
@@ -209,7 +195,8 @@
 			<script id="group-template" type="text/x-nunjucks-template">
 				<section id="{{ slug }}" class="group group--{{ slug }}" data-slug="{{ slug }}">
 					{% if icons and icons|length %}
-						<a href="{{ url }}" class="image"><img src="{{ icons[icons|length - 1].src }}" alt="{{ name }}" data-position="center center"></a>
+						{% set icon = icons[icons|length - 1] %}
+						<a href="{{ url }}" class="image"><img src="{{ icon.src }}" alt="{{ name }}" data-position="{{ icon.position or 'center' }}"></a>
 					{% endif %}
 					<div class="content">
 						<div class="inner">

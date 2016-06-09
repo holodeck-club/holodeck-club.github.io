@@ -8,7 +8,7 @@
   }
 
   var groupsBySlug = {};
-  var linksByGroupSlug = window.linksByGroupSlug={};
+  var linksByGroupSlug = window.linksByGroupSlug = {};
 
   var groupTemplateHtml = document.querySelector('#group-template').innerHTML;
   var groupTemplate;
@@ -28,8 +28,11 @@
       var context = Object.assign({}, manifest);
       context.links = linksByGroupSlug[manifest.slug];
       var groupHtml = groupTemplate.render(context);
-      exploreSection.insertAdjacentHTML('beforeend', groupHtml);
+      exploreSection.insertAdjacentHTML('afterbegin', groupHtml);
       group = getGroupEl(manifest.slug);
+      if (window.enhanceGroupImages) {
+        window.enhanceGroupImages.bind(group)();
+      }
     }
     return group;
   }
@@ -127,6 +130,15 @@
 
       console.log('cache miss', url);
 
+      var cacheResponse = function (responseData) {
+        console.log('cache storing', url, responseData);
+        responseData.__expires__ = new Date().getTime() + 1800000;  // 30 minutes
+        return localforage.setItem(url, responseData).then(function () {
+          console.log('cache stored', url);
+          return responseData;
+        });
+      };
+
       return new Promise(function (resolve, reject) {
         console.log('xhr get', url);
         var xhr = new XMLHttpRequest();
@@ -139,27 +151,14 @@
               resolve({});
             }
           } else {
-            reject(new Error(this.status));
+            reject({error: true, status: this.status});
           }
         });
         xhr.addEventListener('error', function () {
-          reject(new Error(this.status));
+          reject({error: true, status: this.status});
         });
         xhr.send();
-
-      }).then(function (responseData) {
-
-        console.log('cache storing', url, '-', responseData);
-
-        responseData.__expires__ = new Date().getTime() + 1800000;  // 30 minutes
-
-        return localforage.setItem(url, responseData).then(function () {
-          console.log('cache stored!', url);
-          return responseData;
-        });
-
-      });
-
+      }).then(cacheResponse, cacheResponse);
     });
   }
 
@@ -216,7 +215,6 @@
   }
 
   function getManifest (dirName) {
-    // TODO: Fetch real manifest.
     var dirChunks = dirName.split('/');
 
     var name = dirChunks[dirChunks.length - 1].replace(/[-_]/g, ' ');
@@ -228,28 +226,49 @@
     var sectionPath = '/' + sectionSlug + '/';
     var sectionUrl = BASE_WWW_URL_SLASHLESS + sectionPath;
 
-    var manifest = {
+    var isParent = slug === sectionSlug;
+
+    var manifestSkeleton = {
       name: name,
       slug: slug,
       path: path,
       url: url,
       section: {},
-      is_parent: slug === sectionSlug
+      is_parent: isParent
     };
 
-    if (manifest.is_parent) {
-      manifest.section = manifest;
-      groupsBySlug[slug] = manifest;
-    } else {
-      manifest.section = groupsBySlug[sectionSlug];
-      if (sectionSlug in linksByGroupSlug) {
-        linksByGroupSlug[sectionSlug].push(manifest);
+    var processManifest = function (manifest) {
+      if (manifest.error) {
+        console.warn('manifest error', manifest.message || manifest.status);
+        manifest = manifestSkeleton;
       } else {
-        linksByGroupSlug[sectionSlug] = [manifest];
+        manifest = Object.assign({}, manifestSkeleton, manifest);
       }
-    }
 
-    return Promise.resolve(manifest);
+      if (isParent) {
+        manifest.section = manifest;
+        manifest.isParent = true;
+        groupsBySlug[slug] = manifest;
+      } else {
+        manifest.section = groupsBySlug[sectionSlug];
+        manifest.isParent = false;
+        if (sectionSlug in linksByGroupSlug) {
+          linksByGroupSlug[sectionSlug].push(manifest);
+        } else {
+          linksByGroupSlug[sectionSlug] = [manifest];
+        }
+      }
+
+      return manifest;
+    };
+
+    // TODO: Fetch from filename specified by `<link rel="manifest">` in `index.html`.
+    return getJSON(path + 'manifest.json')
+      .then(processManifest)
+      .catch(function (err) {
+        console.warn(err);
+        return processManifest(manifestSkeleton);
+      });
   }
 
   function looksLikeAUrl (url) {

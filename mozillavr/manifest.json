@@ -2,6 +2,7 @@
   "name": "Mozilla VR",
   "short_name": "MozVR",
   "start_url": "./?utm_source=web_app_manifest",
+  "description": "Selected experiments created by the Mozilla VR team.",
   "display": "standalone",
   "theme_color": "#000",
   "background_color": "#26a9e0",
@@ -9,7 +10,8 @@
     {
       "src": "https://holodeck.club/assets/img/mozillavr-fox.png",
       "sizes": "600x600",
-      "type": "image/png"
+      "type": "image/png",
+      "position": "90% 50%"
     }
   ],
   "prefer_related_applications": false,
