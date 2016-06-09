@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>Teleport</title>
+    <meta name="description" content="Teleport – A-Frame">
+    <script src="../../../dist/aframe.js"></script>
+    <script src="../../_js/THREE.MeshLine.js"></script>
+    <script src="components/teleport.js"></script>
+    <script src="components/groundloader.js"></script>
+  </head>
+  <body style="background-color: #000">
+    <a-scene debug="true">
+      <a-assets>
+        <img id="floor" src="floor.jpg">
+        <!--<img id="gradient" src="gradient.png">-->
+      </a-assets>
+      <!-- lights -->
+      <a-entity light="color: #f4f4f4; intensity: 0.6; type: point"></a-entity>
+      <a-entity light="color: #47c9ff; intensity: 0.6; type: hemisphere"></a-entity>
+      <!-- scene geometry -->
+      <a-entity id="ground"
+                geometry="primitive: circle; radius: 8;"
+                rotation="-90 0 0"
+                material="shader: flat; src: #floor; transparent:true; opacity: 0.9">
+      </a-entity>
+      <a-entity
+                geometry="primitive: sphere; radius: 1;"
+                position= "1 0 3"
+                rotation="0 45 0"
+                material="color: #f00">
+      </a-entity>
+      <a-entity
+                geometry="primitive: box; width: 2; height: 3"
+                position= "-2 0 -2"
+                rotation="0 65 0"
+                material="color: #ff0">
+      </a-entity>
+      <a-entity
+                geometry="primitive: box;"
+                position= "4 0 3";
+                material="color: #00f">
+      </a-entity>
+      <a-entity ground-loader position="0 -0.5 0"></a-entity>
+
+<!-- HIT entity
+      <a-entity id="hit" position="0 0 0" visible="false">
+        <a-entity geometry="primitive: torus; radius: 0.25; radiusTubular: 0.01"
+                  position= "0 0 0"
+                  rotation="90 0 0"
+                  material="shader: flat; color: #9f9; side: double;">
+        </a-entity>
+        <a-entity geometry="primitive: cylinder; radius: 0.25; height:0.25; openEnded: true"
+                  position= "0 0.125 0"
+                  material="color: #9f9; side: double; src: #gradient; transparent: true; depthTest:false">
+        </a-entity>
+      </a-entity>
+-->
+      <!-- hand controls -->
+      <a-entity id="left-hand"
+                teleport=""
+                hand-controls="hand: left"
+                blend-model="url(../../assets/models/hands/leftHand.json)">
+      </a-entity>
+      <a-entity id="right-hand"
+                teleport=""
+                hand-controls="hand: right"
+                blend-model="url(../../assets/models/hands/rightHand.json)">
+      </a-entity>
+    </a-scene>
+  </body>
+</html>

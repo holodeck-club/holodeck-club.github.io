@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>Room Scale</title>
+    <meta name="description" content="Room Scale – A-Frame">
+    <script src="../../../build/aframe.js"></script>
+    <script src="components/enemy.js"></script>
+    <script src="components/gun.js"></script>
+    <script src="components/bullet.js"></script>
+    <script src="components/enemybullet.js"></script>
+    <script src="components/counter.js"></script>
+  </head>
+  <body>
+    <a-scene debug="true">
+      <a-assets>
+        <img id="arena" src="../../assets/img/aframeArena.png">
+      </a-assets>
+      <a-entity position="0 10 0" light="color: #fff; intensity: 1.0; type: point"></a-entity>
+      <a-entity light="color: #47c9ff; intensity: 0.3; type: hemisphere"></a-entity>
+
+      <a-entity id="left-hand" gun="" hand-controls="hand: left"
+        obj-model="obj: url(gun.obj); mtl: url(gun.mtl)">
+      </a-entity>
+      <!--<a-entity id="right-hand" gun="" hand-controls="hand: right"
+                blend-model="url(../../assets/models/hands/rightHand.json)"></a-entity>
+              -->
+      <a-entity id="right-hand" gun="" hand-controls="hand: right"
+                obj-model="obj: url(gun.obj); mtl: url(gun.mtl)">
+      </a-entity>
+      <a-entity id="sky2"
+                geometry="primitive: sphere; radius: 565;"
+                material="shader: flat; color: #47c9ff; side: double; src: url(sky.jpg)">
+      </a-entity>
+
+<!--      <a-entity id="sky"
+                geometry="primitive: sphere; radius: 565;"
+                material="shader: flat; color: #47c9ff; side: double; map: url(sky.jpg)">
+                <a-animation attribute="material.color" to="#47c9ff" from="#ff0000" begin="player-hit" dur="500" fill="forwards"></a-animation>
+      </a-entity>
+  <!--    <a-entity id="ground"
+                geometry="primitive: circle; radius: 8;"
+                rotation="-90 0 0"
+                material="shader: flat; src: #arena"></a-entity>
+                <a-entity counter></a-entity>
+-->
+
+<a-entity id="sky"
+          position = "1 1 1"
+          obj-model="obj: url(gun.obj); mtl: url(gun.mtl)"
+            scale="0.01 0.01 0.01"
+          material="color: #fff;"></a-entity>
+
+      <a-entity id="ground2"
+                position="0 0.0 0"
+                obj-model="obj: url(platform.obj)"
+                material="color: #F7B896;"></a-entity>
+      <a-entity id="sky"
+                scale="0.1 0.1 0.1s"
+                obj-model="obj: url(bigsphere2.obj)"
+                material="color: #333;"></a-entity>
+
+
+    </a-scene>
+  </body>
+</html>

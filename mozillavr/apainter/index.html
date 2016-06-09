@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>A-Painter</title>
+    <meta name="description" content="A-Painter – A-Frame">
+    <script src="../../../dist/aframe.js"></script>
+    <!--<script src="components/enemy.js"></script>-->
+    <script src="../../_js/THREE.MeshLine.js"></script>
+    <script src="components/brush.js"></script>
+    <script src="components/colorwheel.js"></script>
+    <!--<script src="components/bullet.js"></script>
+    <script src="components/enemybullet.js"></script>
+    <script src="components/counter.js"></script>-->
+  </head>
+  <script>
+  AFRAME.registerComponent('my-model', {
+    update: function () {
+      var objectLoader;
+      var object3D = this.el.object3D;
+      if (this.objectLoader) { return; }
+      objectLoader = this.objectLoader = new THREE.ObjectLoader();
+      objectLoader.load('http://localhost:9000/examples/showcase/apainter/untitled.json', function (obj) {
+        obj.children.forEach(function (value) {
+          if (value instanceof THREE.Mesh) {
+            value.geometry.computeFaceNormals();
+            value.geometry.computeVertexNormals();
+            value.receiveShadow = true;
+            value.material.shading = THREE.FlatShading;
+          }
+        });
+        object3D.add(obj);
+      });
+    }
+  });
+  </script>
+  <body style="background-color: #000">
+    <a-scene debug="true">
+      <a-assets>
+        <img id="arena" src="../../assets/img/aframeArena.png">
+        <img id="floor" src="floor.jpg">
+        <img id="color" src="colorwheel.png">
+        <img id="stroke1" src="preview_stroke1.png">
+        <img id="stroke3" src="preview_stroke3.png">
+        <img id="stroke4" src="preview_stroke4.png">
+        <img id="stroke6" src="preview_stroke6.png">
+        <img id="stroke7" src="preview_stroke7.png">
+        <img id="stroke_background" src="strokes_background.png">
+      </a-assets>
+      <a-entity id="point" light="color: #f4f4f4; intensity: 0.6; type: point"></a-entity>
+      <a-entity id="hemisphere" light="color: #47c9ff; intensity: 0.8; type: hemisphere"></a-entity>
+      <!--<a-entity id="left-hand"
+                brush="color: #00f"
+                hand-controls="hand: left"
+                blend-model="url(../../assets/models/hands/leftHand.json)">
+                <a-entity colorwheel geometry="primitive:plane; width: 0.1; height: 0.1" position="0 0.027 0.06" rotation="90 0 0" material="shader: flat; transparent:true; color: #fff; src:#color; side:double">
+                  <a-entity marker geometry="primitive: sphere; radius: 0.005" position="0 0 0" material="color: #fff; roughness: 1.0; metalness:0.0">
+                  </a-entity>
+                </a-entity>
+                blend-model="url(../../assets/models/hands/rightHand.json)">
+      </a-entity>-->
+      <a-entity id="right-hand"
+                brush="color: #ff0; linewidth: 1"
+                hand-controls="hand: right"
+                my-model="url(untitled.json)">
+                <a-entity visible="true" colorwheel geometry="primitive:plane; width: 0.1; height: 0.1" position="0 0.027 0.06" rotation="90 0 0" material="shader: flat; transparent:true; color: #fff; src:#color; side:double">
+                  <a-entity marker geometry="primitive: sphere; radius: 0.005" position="0 0 0" material="color: #fff; roughness: 1.0; metalness:0.0">
+                  </a-entity>
+                </a-entity>
+                <a-entity visible="false" strokeselector geometry="primitive:circle; radius: 0.05" position="0 0.027 0.06" rotation="-90 0 0" material="shader: flat; color: #ef2d5e; side:double">
+                </a-entity>
+      </a-entity>
+<!--
+      <a-entity id="sky"
+                geometry="primitive: sphere; radius: 65;"
+                material="shader: flat; color: #47c9ff; side: double">
+      </a-entity>-->
+      <a-entity id="ground"
+                geometry="primitive: circle; radius: 8;"
+                rotation="-90 0 0"
+                material="shader: flat; src: #floor">
+      </a-entity>
+    </a-scene>
+  </body>
+</html>
