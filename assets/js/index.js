@@ -3,45 +3,35 @@
   if (!('Promise' in window)) {
     injectPackage('es6-promise');
   }
+  if (!('assign' in Object)) {
+    injectPackage('object-assign');
+  }
 
-  var manifests = window.manifests = [];
-  var sectionManifests = {};
+  var groupsBySlug = {};
+  var linksByGroupSlug = window.linksByGroupSlug={};
 
   var groupTemplateHtml = document.querySelector('#group-template').innerHTML;
   var groupTemplate;
 
   var exploreSection = document.querySelector('#explore');
 
-  function getGroupBySlug (slug) {
+  function getGroupEl (slug) {
     return document.querySelector('.group[data-slug="' + slug + '"]');
   }
 
   function createOrGetGroup (manifest) {
-    var group = getGroupBySlug(manifest.slug);
+    if (!manifest.is_parent) {
+      manifest = manifest.section;
+    }
+    var group = getGroupEl(manifest.slug);
     if (!group) {
-      var groupHtml = groupTemplate.render(manifest);
+      var context = Object.assign({}, manifest);
+      context.links = linksByGroupSlug[manifest.slug];
+      var groupHtml = groupTemplate.render(context);
       exploreSection.insertAdjacentHTML('beforeend', groupHtml);
-      group = getGroupBySlug(manifest.slug);
+      group = getGroupEl(manifest.slug);
     }
     return group;
-  }
-
-  function createOrAddItem (manifest) {
-    console.log('manifest', manifest);
-
-    var group = createOrGetGroup(manifest.is_parent ? manifest : manifest.section);
-
-    var li = document.createElement('li');
-    li.textContent = manifest.name;
-    li.setAttribute('data-slug', manifest.slug);
-    li.setAttribute('href', manifest.url);
-    group.appendChild(li);
-
-    console.log(li);
-
-    group.querySelector('.dirlist').appendChild(li);
-
-    return li;
   }
 
   function injectScripts (srcs) {
@@ -123,10 +113,10 @@
     return localforage.getItem(url).then(function (value) {
 
       if (value !== null) {
-        console.log('value.__expires__', new Date().getTime() >= value.__expires__, '-', new Date().getTime(), '----', value.__expires__);
         if (value.__expires__ && new Date().getTime() >= value.__expires__) {
-          console.log('cache expiry', url);
+          console.log('cache expired', url);
           return localforage.removeItem(url).then(function () {
+            console.log('cache item removed', url);
             return getJSON(url);
           });
         }
@@ -176,7 +166,8 @@
   var GH_REPO = 'holodeck-club/holodeck-club.github.io';
   var GH_REPO_URL = 'https://github.com/' + GH_REPO;
   var API_BASE_URL = 'https://api.github.com/repos/' + GH_REPO;
-  var BASE_WWW_URL = 'https://holodeck.club';
+  var BASE_WWW_URL = 'https://holodeck.club/';
+  var BASE_WWW_URL_SLASHLESS = BASE_WWW_URL.replace(/\/$/, '');
   var BRANCH = 'master';
   BRANCH = 'deux';
   var DIR_BLACKLIST = ['assets', 'common', 'node_modules', 'test', 'tests'];
@@ -187,14 +178,13 @@
   ]).then(initDirectory);
 
   function initDirectory () {
-    console.log('initDirectory')
     groupTemplate = nunjucks.compile(groupTemplateHtml);
 
     getJSON(API_BASE_URL + '/git/refs/heads/' + BRANCH).then(function gotRefs (data) {
-      console.log('data', data);
       return getJSON(API_BASE_URL + '/git/trees/' + data.object.sha + '?recursive=1');
     }).then(function gotTree (data) {
       var manifestsFetched = [];
+
       data.tree.forEach(function (file) {
         var pathChunks = file.path.split('/');
         if (!file ||
@@ -217,8 +207,10 @@
         }));
       });
 
-      Promise.all(manifestsFetched).then(function (manifests) {
-        manifests.map(createOrAddItem);
+      return Promise.all(manifestsFetched).then(function () {
+        Object.keys(groupsBySlug).forEach(function (slug) {
+          createOrGetGroup(groupsBySlug[slug]);
+        });
       });
     });
   }
@@ -230,11 +222,11 @@
     var name = dirChunks[dirChunks.length - 1].replace(/[-_]/g, ' ');
     var slug = dirName;
     var path = '/' + dirName + '/';
-    var url = BASE_WWW_URL + path;
+    var url = BASE_WWW_URL_SLASHLESS + path;
 
     var sectionSlug = dirChunks[0];
     var sectionPath = '/' + sectionSlug + '/';
-    var sectionUrl = BASE_WWW_URL + sectionPath;
+    var sectionUrl = BASE_WWW_URL_SLASHLESS + sectionPath;
 
     var manifest = {
       name: name,
@@ -247,9 +239,14 @@
 
     if (manifest.is_parent) {
       manifest.section = manifest;
-      sectionManifests[slug] = manifest;
+      groupsBySlug[slug] = manifest;
     } else {
-      manifest.section = sectionManifests[sectionSlug];
+      manifest.section = groupsBySlug[sectionSlug];
+      if (sectionSlug in linksByGroupSlug) {
+        linksByGroupSlug[sectionSlug].push(manifest);
+      } else {
+        linksByGroupSlug[sectionSlug] = [manifest];
+      }
     }
 
     return Promise.resolve(manifest);

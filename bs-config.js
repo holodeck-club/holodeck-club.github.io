@@ -92,6 +92,9 @@ opts.middleware.push(function (req, res, next) {
         data += chunk;
       }
     });
+    readableStream.on('error', function () {
+      next();
+    });
     readableStream.on('end', function () {
       res.end(data.replace(REMOTE_URL_REGEX, REMOTE_URL_REGEX_REPLACER));
     });

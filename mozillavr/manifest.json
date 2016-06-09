@@ -1,0 +1,25 @@
+{
+  "name": "Mozilla VR",
+  "short_name": "MozVR",
+  "start_url": "./?utm_source=web_app_manifest",
+  "display": "standalone",
+  "theme_color": "#000",
+  "background_color": "#26a9e0",
+  "icons": [
+    {
+      "src": "https://holodeck.club/assets/img/mozillavr-fox.png",
+      "sizes": "600x600",
+      "type": "image/png"
+    }
+  ],
+  "prefer_related_applications": false,
+  "aframe": {
+    "version": "master",
+    "components": [
+      "aframe-href-component",
+      "annyang",
+      "https://holodeck.club/common/assets/js/lib/voice-nav.js",
+      "assets/js/voice-controls.js"
+    ]
+  }
+}

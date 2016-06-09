@@ -4,9 +4,9 @@
     <meta charset="utf-8">
     <title>A-Painter</title>
     <meta name="description" content="A-Painter – A-Frame">
-    <script src="../../../dist/aframe.js"></script>
+    <script src="../../common/assets/js/lib/aframe/aframe.js"></script>
     <!--<script src="components/enemy.js"></script>-->
-    <script src="../../_js/THREE.MeshLine.js"></script>
+    <script src="../../common/assets/js/lib/THREE.MeshLine.js"></script>
     <script src="components/brush.js"></script>
     <script src="components/colorwheel.js"></script>
     <!--<script src="components/bullet.js"></script>
@@ -20,7 +20,7 @@
       var object3D = this.el.object3D;
       if (this.objectLoader) { return; }
       objectLoader = this.objectLoader = new THREE.ObjectLoader();
-      objectLoader.load('http://localhost:9000/examples/showcase/apainter/untitled.json', function (obj) {
+      objectLoader.load('./untitled.json', function (obj) {
         obj.children.forEach(function (value) {
           if (value instanceof THREE.Mesh) {
             value.geometry.computeFaceNormals();
@@ -37,7 +37,7 @@
   <body style="background-color: #000">
     <a-scene debug="true">
       <a-assets>
-        <img id="arena" src="../../assets/img/aframeArena.png">
+        <img id="arena" src="../../common/assets/img/aframeArena.png">
         <img id="floor" src="floor.jpg">
         <img id="color" src="colorwheel.png">
         <img id="stroke1" src="preview_stroke1.png">
