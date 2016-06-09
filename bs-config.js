@@ -86,16 +86,17 @@ opts.middleware.push(function (req, res, next) {
     }
     var data = '';
     var chunk;
-    res.writeHead(200, {'Content-Type': mimeType});
     readableStream.on('readable', function () {
       while ((chunk = readableStream.read()) !== null) {
         data += chunk;
       }
     });
-    readableStream.on('error', function () {
-      next();
+    readableStream.on('error', function (err) {
+      res.writeHead(404);
+      res.end();
     });
     readableStream.on('end', function () {
+      res.writeHead(200, {'Content-Type': mimeType});
       res.end(data.replace(REMOTE_URL_REGEX, REMOTE_URL_REGEX_REPLACER));
     });
     return;
