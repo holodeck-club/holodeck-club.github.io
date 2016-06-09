@@ -171,6 +171,19 @@
   BRANCH = 'deux';
   var DIR_BLACKLIST = ['assets', 'common', 'node_modules', 'test', 'tests'];
 
+  function isValidFile (file) {
+    var pathChunks = file.path.split('/');
+    if (!file ||
+        file.path[0] === '.' ||
+        file.type !== 'tree' ||
+        DIR_BLACKLIST.indexOf(pathChunks[0]) !== -1 ||
+        DIR_BLACKLIST.indexOf(file.path + '/') !== -1 ||
+        pathChunks.length > 2) {
+      return false;
+    }
+    return true;
+  }
+
   Promise.all([
     injectPackage('localforage'),
     injectScript('https://cdnjs.cloudflare.com/ajax/libs/nunjucks/2.4.2/nunjucks.min.js')
@@ -185,16 +198,9 @@
       var manifestsFetched = [];
 
       data.tree.forEach(function (file) {
-        var pathChunks = file.path.split('/');
-        if (!file ||
-            file.path[0] === '.' ||
-            file.type !== 'tree' ||
-            DIR_BLACKLIST.indexOf(pathChunks[0]) !== -1 ||
-            DIR_BLACKLIST.indexOf(file.path + '/') !== -1 ||
-            pathChunks.length > 2) {
+        if (!isValidFile(file)) {
           return;
         }
-
         manifestsFetched.push(getManifest(file.path).then(function (manifest) {
           manifest.git = {
             repo: GH_REPO,
