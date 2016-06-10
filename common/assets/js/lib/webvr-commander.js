@@ -1,5 +1,46 @@
-/* global CustomEvent, define, module */
+/* global CustomEvent, define, location, module */
 (function () {
+  // Service workers require HTTPS (http://goo.gl/lq4gCo). If we're running on a real web server
+  // (as opposed to localhost on a custom port, which is whitelisted), then change the protocol to HTTPS.
+  if ((!location.port || location.port === '80') && location.protocol !== 'https:') {
+    location.protocol = 'https:';
+  }
+
+  if ('serviceWorker' in navigator) {
+
+    // Helper function which returns a promise which resolves once the service worker registration
+    // is past the "installing" state.
+    function waitUntilInstalled (registration) {
+      return new Promise(function (resolve, reject) {
+        if (registration.installing) {
+          // If the current registration represents the "installing" service worker, then wait
+          // until the installation step (during which the resources are pre-fetched) completes
+          // to display the file list.
+          registration.installing.addEventListener('statechange', function (e) {
+            if (e.target.state === 'installed') {
+              resolve();
+            } else if (e.target.state === 'redundant') {
+              reject();
+            }
+          });
+        } else {
+          // Otherwise, if this isn't the "installing" service worker, then installation must have been
+          // completed during a previous visit to this page, and the resources are already pre-fetched.
+          // So we can show the list of files right away.
+          resolve();
+        }
+      });
+    }
+
+    navigator.serviceWorker.register('/sw.js', {scope: './'})
+      .then(waitUntilInstalled)
+      .then(function () {
+        console.log('service worker installed!');
+      }).catch(function (err) {
+        console.log('service worker failed!', err);
+      });
+  }
+
   var webvrCommander = {
     activeVRDisplay: null,
     allVRDisplays: [],
