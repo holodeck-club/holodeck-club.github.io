@@ -3,18 +3,35 @@
   var webvrCommander = {
     activeVRDisplay: null,
     allVRDisplays: [],
-    mute: function () {},
+    updateVRDisplays: updateVRDisplays,
+    audio: function () {},
     speech: function () {},
     utils: {},
     version: '1.0.0'
   };
 
-  if (navigator.getVRDisplays) {
+  var updateVRDisplays = webvrCommander.updateVRDisplays = function () {
+    if (!navigator.getVRDisplays) {
+      return;
+    }
     navigator.getVRDisplays().then(function (displays) {
-      // webvrCommander.activeVRDisplay = vrDisplay;
       webvrCommander.allVRDisplays = displays;
+      var activeVRDisplay;
+      webvrCommander.activeVRDisplay = displays.filter(function (display) {
+        return display.isPresenting;
+      })[0] || null;
     });
-  }
+  };
+
+  updateVRDisplays();
+  window.addEventListener('vrdisplayconnected', updateVRDisplays);
+  window.addEventListener('vrdisplaydisconnected', updateVRDisplays);
+  window.addEventListener('vrdisplaypresentchange', function () {
+    updateVRDisplays();
+    if (window.WEBVR_VOICE_NAV) {
+      window.WEBVR_VOICE_NAV.toggle();
+    }
+  });
 
   /**
    * Fires a custom DOM event.

@@ -17,11 +17,11 @@
   "aframe": {
     "version": "master",
     "components": [
+      "/common/assets/js/lib/webvr-commander.js",
       "aframe-href-component",
       "annyang",
       "https://holodeck.club/common/assets/js/lib/voice-nav.js",
-      "/common/assets/js/voice-controls.js",
-      "/common/assets/js/lib/webvr-commander.js"
+      "/common/assets/js/voice-controls.js"
     ]
   }
 }

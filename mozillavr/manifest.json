@@ -17,11 +17,11 @@
   "prefer_related_applications": false,
   "aframe": {
     "components": [
+      "../../common/assets/js/lib/webvr-commander.js",
       "aframe-href-component",
       "annyang",
       "../../common/assets/js/lib/voice-nav.js",
-      "assets/js/voice-controls.js",
-      "../../common/assets/js/lib/webvr-commander.js"
+      "assets/js/voice-controls.js"
     ]
   }
 }

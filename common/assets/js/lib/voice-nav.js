@@ -227,30 +227,46 @@
 
     if (window.hc && window.hc.speech && window.hc.speech.autoload) {
       window.addEventListener('load', function () {
-        toggleSpeechRecognition(2000);
+        startSpeechRecognition(2000);
       });
     }
 
     window.addEventListener('vrdisplaypresentready', function () {
-      toggleSpeechRecognition(2000);
+      startSpeechRecognition(2000);
     });
 
-    window.addEventListener('vrdisplaypresentchange', toggleSpeechRecognition);
+    window.addEventListener('vrdisplaypresentchange', function () {
+      toggleSpeechRecognition();
+    });
 
-    function toggleSpeechRecognition (timeout) {
+    var startSpeechRecognition = function (timeout) {
       if (!timeout || typeof timeout !== 'number') {
         timeout = 0;
       }
       setTimeout(function () {
+        console.log('Starting voice recognition');
         annyang.start();
       }, timeout);
-      // if (annyang.isListening()) {
-      //   console.log('Pausing voice recognition');
-      //   annyang.pause();
-      // } else {
-      //   console.log('Starting voice recognition');
-      //   annyang.start();
-      // }
-    }
+    };
+
+    var toggleSpeechRecognition = function (timeout) {
+      if (!timeout || typeof timeout !== 'number') {
+        timeout = 0;
+      }
+      setTimeout(function () {
+        if (annyang.isListening()) {
+          console.log('Pausing voice recognition');
+          annyang.pause();
+        } else {
+          console.log('Starting voice recognition');
+          annyang.start();
+        }
+      }, timeout);
+    };
+
+    window.WEBVR_VOICE_NAV = {
+      start: startSpeechRecognition,
+      toggle: toggleSpeechRecognition
+    };
   }
 })();
