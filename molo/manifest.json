@@ -1,0 +1,28 @@
+{
+  "name": "Mozilla VR @ London",
+  "short_name": "MozVR London",
+  "start_url": "./?utm_source=web_app_manifest",
+  "description": "London Showcase by the Mozilla VR team.",
+  "display": "standalone",
+  "theme_color": "#000",
+  "background_color": "#26a9e0",
+  "icons": [
+    {
+      "src": "https://holodeck.club/assets/img/mozillavr-fox.png",
+      "sizes": "600x600",
+      "type": "image/png",
+      "position": "90% 50%"
+    }
+  ],
+  "prefer_related_applications": false,
+  "aframe": {
+    "components": [
+      "../../common/assets/js/lib/webvr-commander.js",
+      "../../common/assets/js/lib/aframe-viewmode-component.js",
+      "aframe-href-component",
+      "annyang",
+      "../../common/assets/js/lib/voice-nav.js",
+      "assets/js/voice-controls.js"
+    ]
+  }
+}
