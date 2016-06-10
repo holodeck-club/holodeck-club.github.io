@@ -4,7 +4,7 @@
     throw new Error('Component attempted to register before AFRAME was available.');
   }
 
-  var queryParams = AFRAME.utils.queryParams;
+  var $_GET = AFRAME.utils.getUrlParameter;
 
   var parseMetaContent = function (tag) {
     var obj = {};
@@ -91,7 +91,7 @@
     },
 
     update: function () {
-      if (!this.data.enabled || queryParams.viewmode === 'false') { return; }
+      if (!this.data.enabled || $_GET('viewmode') === 'false') { return; }
       return this.autoload();
     },
 
