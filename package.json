@@ -13,7 +13,10 @@
     "prod": "npm run server",
     "server": "browser-sync start --config bs-config.js",
     "jspm": "jspm",
-    "bundle": "node jspm-bundle.js"
+    "bundle": "node jspm-bundle.js",
+    "postinstall": "npm run syncprojects",
+    "syncprojects": "npm run syncprojects:the-composer",
+    "syncprojects:the-composer": "npm i --save mozvr/the-composer-threejs#prod && mv node_modules/the-composer/app molo/the-composer"
   },
   "jspm": {
     "directories": {
@@ -26,5 +29,8 @@
       "gasolin/aframe-href-component": "github:gasolin/aframe-href-component@master"
     },
     "devDependencies": {}
+  },
+  "dependencies": {
+    "the-composer": "github:mozvr/the-composer-threejs#prod"
   }
 }

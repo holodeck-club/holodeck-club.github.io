@@ -8,7 +8,7 @@
       title: 'A-Painter',
       slug: 'apainter',
       url: '/mozillavr/apainter/',
-      keywords: ['paint', 'painting', 'tiltbrush', 'tilt', 'brush'],
+      keywords: ['paint', 'painting', 'tiltbrush', 'tilt', 'brush']
     },
     {
       title: 'Droids Hunter',
@@ -29,6 +29,12 @@
       title: 'Teleport',
       slug: 'teleport',
       url: '/mozillavr/teleport/'
+    },
+    {
+      title: 'The Composer',
+      slug: 'the-composer',
+      url: '/molo/teleport/',
+      keywords: ['music', 'musical', 'instrument', 'creature', 'cute']
     }
   ]);
 })();
