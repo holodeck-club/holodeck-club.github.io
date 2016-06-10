@@ -23,7 +23,8 @@
       "aframe-href-component",
       "annyang",
       "../../common/assets/js/lib/voice-nav.js",
-      "assets/js/voice-controls.js"
+      "assets/js/voice-controls.js",
+      "../../common/assets/js/lib/webvr-commander.js"
     ]
   }
 }

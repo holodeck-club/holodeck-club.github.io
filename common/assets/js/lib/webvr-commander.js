@@ -3,6 +3,8 @@
   var webvrCommander = {
     activeVRDisplay: null,
     allVRDisplays: [],
+    mute: function () {},
+    speech: function () {},
     utils: {},
     version: '1.0.0'
   };
