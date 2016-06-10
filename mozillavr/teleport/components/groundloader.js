@@ -5,7 +5,7 @@ AFRAME.registerComponent('ground-loader', {
     var object3D = this.el.object3D;
     if (this.objectLoader) { return; }
     objectLoader = this.objectLoader = new THREE.ObjectLoader();
-    objectLoader.load('http://localhost:9000/examples/showcase/teleport/models/ground.json', function (obj) {
+    objectLoader.load('./models/ground.json', function (obj) {
       obj.children.forEach(function (value) {
         if (value instanceof THREE.Mesh) {
           value.geometry.computeFaceNormals();

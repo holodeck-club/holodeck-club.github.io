@@ -4,7 +4,9 @@
     <meta charset="utf-8">
     <title>Teleport</title>
     <meta name="description" content="Teleport – A-Frame">
+    <link rel="manifest" href="../manifest.json">
     <script src="../../common/assets/js/lib/aframe/aframe.js"></script>
+    <script src="../../common/assets/js/lib/loader.js"></script>
     <script src="../../common/assets/js/lib/THREE.MeshLine.js"></script>
     <script src="components/teleport.js"></script>
     <script src="components/groundloader.js"></script>
@@ -60,12 +62,12 @@
       <a-entity id="left-hand"
                 teleport=""
                 hand-controls="hand: left"
-                blend-model="url(../../assets/models/hands/leftHand.json)">
+                blend-model="url(../../common/assets/models/hands/leftHand.json)">
       </a-entity>
       <a-entity id="right-hand"
                 teleport=""
                 hand-controls="hand: right"
-                blend-model="url(../../assets/models/hands/rightHand.json)">
+                blend-model="url(../../common/assets/models/hands/rightHand.json)">
       </a-entity>
     </a-scene>
   </body>

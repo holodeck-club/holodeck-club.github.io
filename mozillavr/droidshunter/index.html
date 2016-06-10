@@ -4,7 +4,9 @@
     <meta charset="utf-8">
     <title>Room Scale</title>
     <meta name="description" content="Room Scale – A-Frame">
+    <link rel="manifest" href="../manifest.json">
     <script src="../../common/assets/js/lib/aframe/aframe.js"></script>
+    <script src="../../common/assets/js/lib/loader.js"></script>
     <script src="components/enemy.js"></script>
     <script src="components/gun.js"></script>
     <script src="components/bullet.js"></script>
@@ -23,7 +25,7 @@
         obj-model="obj: url(gun.obj); mtl: url(gun.mtl)">
       </a-entity>
       <!--<a-entity id="right-hand" gun="" hand-controls="hand: right"
-                blend-model="url(../../assets/models/hands/rightHand.json)"></a-entity>
+                blend-model="url(../../common/assets/models/hands/rightHand.json)"></a-entity>
               -->
       <a-entity id="right-hand" gun="" hand-controls="hand: right"
                 obj-model="obj: url(gun.obj); mtl: url(gun.mtl)">

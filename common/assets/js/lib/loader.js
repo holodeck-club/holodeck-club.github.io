@@ -1,5 +1,4 @@
 (function () {
-
 var hasLoader = document.head.querySelector('script[src*="common/assets/js/lib/loader.js"]');
 
 if (!hasLoader) {
@@ -17,12 +16,25 @@ var registryUrls = {
 };
 var defaultRegistry = 'browserify';
 
+var aLink = document.createElement('a');
+function resolveUrl (from, to) {
+  if (isExternalUrl(to)) {
+    return to;
+  }
+  aLink.href = from + '/../' + to;
+  return aLink.href;
+}
+
+function isExternalUrl (path) {
+  return path.substr(0, 5) === 'http:' ||
+    path.substr(0, 6) === 'https:' ||
+    path.substr(0, 5) === 'file:';
+}
+
 function getPackageUrl (path) {
   if (path[0] === '/' ||
       path[0] === '.' ||
-      path.substr(0, 5) === 'http:' ||
-      path.substr(0, 6) === 'https:' ||
-      path.substr(0, 5) === 'file:') {
+      isExternalUrl(path)) {
     return path;
   }
 
@@ -43,9 +55,7 @@ function getRawGitUrl (repo, ref, path) {
 function getAframeDistUrl (ref) {
   if (ref[0] === '/' ||
       ref[0] === '.' ||
-      ref.substr(0, 5) === 'http:' ||
-      ref.substr(0, 6) === 'https:' ||
-      ref.substr(0, 5) === 'file:') {
+      isExternalUrl(ref)) {
     return ref;
   }
   return getRawGitUrl('aframevr/aframe', ref, isLocal ? 'dist/aframe.js' : 'dist/aframe.min.js');
@@ -153,13 +163,13 @@ if (manifest) {
       var components = manifestData.aframe.components;
       if (manifestData.aframe.version) {
         console.log('[manifest-loader] Requesting A-Frame version "%s"', manifestData.aframe.version);
-        scripts.push(getAframeDistUrl(manifestData.aframe.version));
+        scripts.push(resolveUrl(manifestUrl, getAframeDistUrl(manifestData.aframe.version)));
       }
       var componentUrl;
       components.forEach(function (componentName) {
         componentUrl = getPackageUrl(componentName);
         console.log('[manifest-loader] Requesting A-Frame component "%s"', componentName);
-        scripts.push(componentUrl);
+        scripts.push(resolveUrl(manifestUrl, componentUrl));
       });
     }
 

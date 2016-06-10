@@ -5,7 +5,7 @@ AFRAME.registerComponent('json-loader', {
     var object3D = this.el.object3D;
     if (this.objectLoader) { return; }
     objectLoader = this.objectLoader = new THREE.ObjectLoader();
-    objectLoader.load('http://localhost:9000/examples/showcase/droidshunter/untitled.json', function (obj) {
+    objectLoader.load('./untitled.json', function (obj) {
       console.log(obj);
       obj.children.forEach(function (value) {
         if (value instanceof THREE.Mesh) {

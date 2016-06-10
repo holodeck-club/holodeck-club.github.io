@@ -7,6 +7,21 @@
     return (str || '').trim();
   };
 
+  var aLink = document.createElement('a');
+  function resolveUrl (from, to) {
+    if (isExternalUrl(to)) {
+      return to;
+    }
+    aLink.href = from + '/../' + to;
+    return aLink.href;
+  }
+
+  function isExternalUrl (path) {
+    return path.substr(0, 5) === 'http:' ||
+      path.substr(0, 6) === 'https:' ||
+      path.substr(0, 5) === 'file:';
+  }
+
   var goBack = function () {
     console.log('go back');
     window.history.go(-1);
@@ -51,6 +66,8 @@
     function addSpeechCmd (example, title) {
       if (!title) { title = example.title; }
 
+      if (title in speechCmds) { return; }
+
       var cmdFunc = function () { loadExample(example); };
 
       // TODO: Use regular expressions more.
@@ -86,10 +103,14 @@
       speechCmds['start *x ' + title + ' (scene)'] = cmdFunc;
       speechCmds['start *x ' + title + ' (world)'] = cmdFunc;
 
+      // Add keywords.
+      var keywords = example.keywords;
+      if (keywords) {
+        keywords.forEach(function (keyword) { addSpeechCmd(example, keyword) });
+      }
+
+      // Add each word of title.
       (title || '').split(' ').forEach(function (keyword) {
-        if (keyword in speechCmds) {
-          return;
-        }
         addSpeechCmd(example, keyword);
       });
     }
@@ -201,16 +222,22 @@
       }
     });
 
-    window.addEventListener('load', function () {
-      setTimeout(function () {
-        toggleSpeechRecognition();
-      }, 2000);
+    if (window.hc && window.hc.speech && window.hc.speech.autoload) {
+      window.addEventListener('load', function () {
+        toggleSpeechRecognition(2000);
+      });
+    }
+
+    window.addEventListener('vrdisplaypresentready', function () {
+      toggleSpeechRecognition(2000);
     });
 
-    // window.addEventListener('vrdisplaypresentchange', toggleSpeechRecognition);
+    window.addEventListener('vrdisplaypresentchange', toggleSpeechRecognition);
 
-    function toggleSpeechRecognition () {
-      annyang.start();
+    function toggleSpeechRecognition (timeout) {
+      setTimeout(function () {
+        annyang.start();
+      }, timeout || 0);
       // if (annyang.isListening()) {
       //   console.log('Pausing voice recognition');
       //   annyang.pause();

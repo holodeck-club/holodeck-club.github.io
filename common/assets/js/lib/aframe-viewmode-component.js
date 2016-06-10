@@ -34,7 +34,8 @@
     dependencies: ['vr-mode-ui'],
 
     schema: {
-      enabled: {default: true}
+      enabled: {default: true},
+      projection: {default: 'stereo'}
     },
 
     init: function () {
@@ -53,6 +54,12 @@
           projection = val.projection;
         }
       });
+      if (!projection) {
+        projection = this.projection;
+        console.log('viewmode defaulting to', projection);
+      } else {
+        console.log('viewmode using', projection);
+      }
       if (projection === 'stereo') {
         return this.enterVR();
       }
