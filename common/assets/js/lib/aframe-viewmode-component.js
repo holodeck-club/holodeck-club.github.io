@@ -62,7 +62,7 @@
     },
 
     handleViewmodeChange: function () {
-      log('autoload');
+      log('handleViewmodeChange');
       var scene = this.el;
       var projection = this.data.projection;
       log('using viewmode projection "' + projection + '"');
@@ -89,12 +89,6 @@
       };
 
       if (projection === 'stereo') {
-        log(scene.vreffect);
-        log(scene.renderStarted);
-        // scene.addEventListener('renderstart', function () {
-        //   log('viewmode renderstart');
-        //   scene.enterVR();
-        // });
         if (navigator.getVRDisplays) {
           return navigator.getVRDisplays().then(enterVR);
         } else if (navigator.getVRDevices) {
