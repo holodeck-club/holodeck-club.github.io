@@ -238,9 +238,12 @@
     window.addEventListener('vrdisplaypresentchange', toggleSpeechRecognition);
 
     function toggleSpeechRecognition (timeout) {
+      if (!timeout || typeof timeout !== 'number') {
+        timeout = 0;
+      }
       setTimeout(function () {
         annyang.start();
-      }, timeout || 0);
+      }, timeout);
       // if (annyang.isListening()) {
       //   console.log('Pausing voice recognition');
       //   annyang.pause();
