@@ -82,7 +82,7 @@ opts.middleware.push(function (req, res, next) {
     } else if (isCSS) {
       mimeType = 'text/css';
     } else if (isJS) {
-      mimeType = 'text/js';
+      mimeType = 'text/javascript';
     }
     var data = '';
     var chunk;
