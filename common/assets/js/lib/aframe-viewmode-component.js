@@ -4,7 +4,12 @@
     throw new Error('Component attempted to register before AFRAME was available.');
   }
 
-  var $_GET = AFRAME.utils.getUrlParameter;
+  var utils = AFRAME.utils;
+  var $_GET = utils.getUrlParameter;
+  var COMPONENT_ENABLED = $_GET('viewmode') !== 'false';
+  var DEFAULT_PROJECTION = 'stereo';
+  var log = utils.debug('components:viewmode:debug');
+  var warn = utils.debug('components:viewmode:warn');
 
   var parseMetaContent = function (tag) {
     var obj = {};
@@ -20,10 +25,24 @@
     return obj;
   };
 
+  var getProjection = function () {
+    var projection = '';
+    var metaViewmodeTags = document.head.querySelectorAll('meta[name="viewmode"]');
+    Array.prototype.forEach.call(metaViewmodeTags, function (tag) {
+      var val = parseMetaContent(tag);
+      if (val && val.projection) {
+        projection = val.projection;
+      }
+    });
+    return projection;
+  };
+
   window.addEventListener('load', function () {
+    var projection = $_GET('viewmode') || getProjection();
+    var attrs = projection ? {projection: projection} : '';
     var sceneTags = document.querySelectorAll('a-scene');
     Array.prototype.forEach.call(sceneTags, function (scene) {
-      scene.setAttribute('viewmode', '');
+      scene.setAttribute('viewmode', attrs);
     });
   });
 
@@ -34,70 +53,79 @@
     dependencies: ['vr-mode-ui'],
 
     schema: {
-      enabled: {default: true},
-      projection: {default: 'stereo'}
+      enabled: {default: COMPONENT_ENABLED},
+      projection: {default: DEFAULT_PROJECTION}
     },
 
     init: function () {
-      console.log('viewmode init');
+      log('init');
     },
 
-    autoload: function () {
-      console.log('viewmode enter');
+    handleViewmodeChange: function () {
+      log('autoload');
       var scene = this.el;
-      if (this.entered) { return false; }
-      var projection = '';
-      var metaViewmodeTags = document.head.querySelectorAll('meta[name="viewmode"]');
-      Array.prototype.forEach.call(metaViewmodeTags, function (tag) {
-        var val = parseMetaContent(tag);
-        if (val && val.projection) {
-          projection = val.projection;
-        }
-      });
-      if (!projection) {
-        projection = this.projection;
-        console.log('viewmode defaulting to', projection);
-      } else {
-        console.log('viewmode using', projection);
-      }
+      var projection = this.data.projection;
+      log('using viewmode projection "' + projection + '"');
+
+      var enterVR = function () {
+        return scene.enterVR().then(function () {
+          log('viewmode entering VR');
+          return projection;
+        }).catch(function (err) {
+          warn(err.message);
+          console.error(err.message);
+          return err;
+        });
+      };
+
+      var exitVR = function () {
+        return scene.exitVR().then(function () {
+          log('viewmode exiting VR');
+          return projection;
+        }).catch(function (err) {
+          warn(err.message);
+          console.error(err.message);
+        });
+      };
+
       if (projection === 'stereo') {
-        return this.enterVR();
+        log(scene.vreffect);
+        log(scene.renderStarted);
+        // scene.addEventListener('renderstart', function () {
+        //   log('viewmode renderstart');
+        //   scene.enterVR();
+        // });
+        if (navigator.getVRDisplays) {
+          return navigator.getVRDisplays().then(enterVR);
+        } else if (navigator.getVRDevices) {
+          return navigator.getVRDevices().then(enterVR);
+        } else {
+          return enterVR();
+        }
       }
+
       if (projection === 'mono') {
-        return this.exitVR();
+        if (navigator.getVRDisplays) {
+          return navigator.getVRDisplays().then(exitVR);
+        } else if (navigator.getVRDevices) {
+          return navigator.getVRDevices().then(exitVR);
+        } else {
+          return exitVR();
+        }
       }
-    },
-
-    enterVR: function () {
-      var self = this;
-      var scene = self.el;
-      // console.log('entering vr', scene.enterVR());
-      return scene.enterVR().then(function () {
-        self.entered = true;
-      }).catch(function (err) {
-        self.entered = true;  // We tried.
-        if (err) { console.warn(err); }
-      });
-    },
-
-    exitVR: function () {
-      var self = this;
-      var scene = self.el;
-      scene.exitVR().then(function () {
-        self.entered = false;
-      }).catch(function () {
-        self.entered = false;
-      });
     },
 
     update: function () {
-      if (!this.data.enabled || $_GET('viewmode') === 'false') { return; }
-      return this.autoload();
+      log('update 1');
+      if (!this.data.enabled) { return; }
+      log('update 2');
+      this.handleViewmodeChange();
     },
 
     remove: function () {
-      console.log('viewmode remove');
-      this.exitVR();
+      log('viewmode remove');
+      this.data.projection = DEFAULT_PROJECTION;
+      this.handleViewmodeChange();
     }
   });
 })();
