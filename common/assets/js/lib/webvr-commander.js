@@ -6,8 +6,9 @@
     updateVRDisplays: updateVRDisplays,
     audio: function () {},
     speech: function () {},
+    db: null,
     utils: {
-      storage: storage({keyPrefix: 'webvr_commander'})
+      storage: storage
     },
     version: '1.0.0'
   };
@@ -32,19 +33,19 @@
       // TODO: Use an` <iframe>` with a Service Worker to store
       // in `window.caches` and then `postMessage` the info back
       // (instead of relying on `sessionStorage` for this origin).
-      if (activeVRDisplay && storage) {
-        storage.setItem('activeVRDisplay',
+      if (activeVRDisplay && db) {
+        db.setItem('activeVRDisplay',
           activeVRDisplay.displayId + ':' +
           activeVRDisplay.displayName);
       } else {
-        storage.removeItem('activeVRDisplay');
+        db.removeItem('activeVRDisplay');
       }
 
       if (updateVRDisplaysCalled) {
         return;
       }
 
-      var previouslyActiveVRDisplay = storage.getItem('activeVRDisplay');
+      var previouslyActiveVRDisplay = db.getItem('activeVRDisplay');
       if (previouslyActiveVRDisplay) {
         var display;
         var displayStr;
@@ -162,8 +163,10 @@
     };
   };
 
+  var db = webvrCommander.db = storage({keyPrefix: 'webvr_commander'});
+
   if (typeof define === 'function' && define.amd) {
-    define('webvr-commander', WEBVR_COMMANDER);
+    define('webvr-commander', webvrCommander);
   } else if (typeof exports !== 'undefined' && typeof module !== 'undefined') {
     module.exports = webvrCommander;
   } else if (window) {
