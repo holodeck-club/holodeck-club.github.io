@@ -17,9 +17,12 @@
   }
 
   function isExternalUrl (path) {
-    return path.substr(0, 5) === 'http:' ||
-      path.substr(0, 6) === 'https:' ||
-      path.substr(0, 5) === 'file:';
+    var firstSixChars = path.substr(0, 6);
+    var firstFiveChars = path.substr(0, 5);
+    return firstSixChars === 'https:' ||
+      firstFiveChars === 'http:' ||
+      firstFiveChars === 'file:' ||
+      firstFiveChars === 'data:';
   }
 
   var goBack = function () {
