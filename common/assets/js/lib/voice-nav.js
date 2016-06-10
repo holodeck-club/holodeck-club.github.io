@@ -36,7 +36,7 @@
   };
 
   // Monkeypatch Annyang :)
-  var initSpeech = annyang.addItems = function (data) {
+  var additems = annyang.addItems = function (data) {
     if (!annyang) { return; }
 
     console.log(JSON.stringify(data, null, 2));
@@ -152,121 +152,130 @@
 
     console.log('>', speechCmds);
     annyang.addCommands(speechCmds);
+  }
 
-    annyang.addCallback('resultNoMatch', function (userSaid, commandText, phrases) {
-      console.log('resultNoMatch', userSaid, userSaid.map(strip), speechCmds);
-      if (!userSaid) { return; }
+  annyang.addCallback('resultNoMatch', function (userSaid, commandText, phrases) {
+    console.log('resultNoMatch', userSaid, userSaid.map(strip));
+    if (!userSaid) { return; }
 
-      userSaid = userSaid.map(strip);
+    userSaid = userSaid.map(strip);
 
-      if (userSaid.indexOf('back') !== -1 ||
-          userSaid.indexOf('previous') !== -1 ||
-          userSaid.indexOf('backward') !== -1 ||
-          userSaid.indexOf('backwards') !== -1 ||
-          userSaid.indexOf('reverse') !== -1) {
+    if (userSaid.indexOf('back') !== -1 ||
+        userSaid.indexOf('previous') !== -1 ||
+        userSaid.indexOf('backward') !== -1 ||
+        userSaid.indexOf('backwards') !== -1 ||
+        userSaid.indexOf('reverse') !== -1) {
+      goBack();
+      return;
+    }
+
+    if (userSaid.indexOf('next') !== -1 ||
+        userSaid.indexOf('forward') !== -1 ||
+        userSaid.indexOf('forwards') !== -1 ||
+        userSaid.indexOf('skip') !== -1 ||
+        userSaid.indexOf('pass') !== -1) {
+      goForward();
+      return;
+    }
+
+    var i = 0;
+    var j = 0;
+    var phrase = '';
+    var words = [];
+    var word = '';
+
+    for (i = 0; i < userSaid.length; i++) {
+      phrase = userSaid[i];
+
+      words = phrase.split(' ');
+
+      if (words.indexOf('backward') !== -1 ||
+          words.indexOf('backwards') !== -1) {
         goBack();
         return;
       }
-
-      if (userSaid.indexOf('next') !== -1 ||
-          userSaid.indexOf('forward') !== -1 ||
-          userSaid.indexOf('forwards') !== -1 ||
-          userSaid.indexOf('skip') !== -1 ||
-          userSaid.indexOf('pass') !== -1) {
+      if (words.indexOf('forward') !== -1 ||
+          words.indexOf('forwards') !== -1) {
         goForward();
         return;
       }
 
-      var i = 0;
-      var j = 0;
-      var phrase = '';
-      var words = [];
-      var word = '';
-
-      for (i = 0; i < userSaid.length; i++) {
-        phrase = userSaid[i];
-
-        words = phrase.split(' ');
-
-        if (words.indexOf('backward') !== -1 ||
-            words.indexOf('backwards') !== -1) {
-          goBack();
-          return;
-        }
-        if (words.indexOf('forward') !== -1 ||
-            words.indexOf('forwards') !== -1) {
-          goForward();
-          return;
-        }
-
-        if (words.indexOf('back') !== -1 ||
-            words.indexOf('previous') !== -1 ||
-            words.indexOf('last') !== -1) {
-          // Disclaimer: last could be confused with last item.
-          goBack();
-          return;
-        }
-        if (words.indexOf('next') !== -1) {
-          goForward();
-          return;
-        }
+      if (words.indexOf('back') !== -1 ||
+          words.indexOf('previous') !== -1 ||
+          words.indexOf('last') !== -1) {
+        // Disclaimer: last could be confused with last item.
+        goBack();
+        return;
       }
-    });
-
-    window.addEventListener('keypress', function (e) {
-      if (e.keyCode === 118) {  // `v`
-        toggleSpeechRecognition();
+      if (words.indexOf('next') !== -1) {
+        goForward();
+        return;
       }
-    });
-
-    window.addEventListener('click', function (e) {
-      if (e.detail >= 3) {  // triple click
-        toggleSpeechRecognition();
-      }
-    });
-
-    if (window.hc && window.hc.speech && window.hc.speech.autoload) {
-      window.addEventListener('load', function () {
-        startSpeechRecognition(2000);
-      });
     }
+  });
 
-    window.addEventListener('vrdisplaypresentready', function () {
+  window.addEventListener('keypress', function (e) {
+    if (e.keyCode === 118) {  // `v`
+      toggleSpeechRecognition();
+    }
+  });
+
+  window.addEventListener('click', function (e) {
+    if (e.detail >= 3) {  // triple click
+      toggleSpeechRecognition();
+    }
+  });
+
+  if (window.hc && window.hc.speech && window.hc.speech.autoload) {
+    window.addEventListener('load', function () {
       startSpeechRecognition(2000);
     });
+  }
 
-    window.addEventListener('vrdisplaypresentchange', function () {
-      toggleSpeechRecognition();
-    });
+  window.addEventListener('vrdisplaypresentready', function () {
+    startSpeechRecognition(2000);
+  });
 
-    var startSpeechRecognition = function (timeout) {
-      if (!timeout || typeof timeout !== 'number') {
-        timeout = 0;
-      }
-      setTimeout(function () {
+  window.addEventListener('vrdisplaypresentchange', function () {
+    toggleSpeechRecognition();
+  });
+
+  var startSpeechRecognition = function (timeout) {
+    if (!timeout || typeof timeout !== 'number') {
+      timeout = 0;
+    }
+    setTimeout(function () {
+      console.log('Starting voice recognition');
+      annyang.start();
+    }, timeout);
+  };
+
+  var toggleSpeechRecognition = function (timeout) {
+    if (!timeout || typeof timeout !== 'number') {
+      timeout = 0;
+    }
+    setTimeout(function () {
+      if (annyang.isListening()) {
+        console.log('Pausing voice recognition');
+        annyang.pause();
+      } else {
         console.log('Starting voice recognition');
         annyang.start();
-      }, timeout);
-    };
-
-    var toggleSpeechRecognition = function (timeout) {
-      if (!timeout || typeof timeout !== 'number') {
-        timeout = 0;
       }
-      setTimeout(function () {
-        if (annyang.isListening()) {
-          console.log('Pausing voice recognition');
-          annyang.pause();
-        } else {
-          console.log('Starting voice recognition');
-          annyang.start();
-        }
-      }, timeout);
-    };
+    }, timeout);
+  };
 
-    window.WEBVR_VOICE_NAV = {
-      start: startSpeechRecognition,
-      toggle: toggleSpeechRecognition
-    };
+  var webvrVoiceNav = {
+    addItems: additems,
+    start: startSpeechRecognition,
+    toggle: toggleSpeechRecognition
+  };
+
+  if (typeof define === 'function' && define.amd) {
+    define('webvr-voice-nav', webvrVoiceNav);
+  } else if (typeof exports !== 'undefined' && typeof module !== 'undefined') {
+    module.exports = webvrVoiceNav;
+  } else if (window) {
+    window.WEBVR_VOICE_NAV = webvrVoiceNav;
   }
 })();

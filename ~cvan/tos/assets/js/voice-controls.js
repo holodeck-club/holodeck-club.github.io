@@ -1,42 +1,14 @@
-/* global annyang */
+/* global WEBVR_VOICE_NAV */
 (function () {
-  if (!('annyang' in window)) {
+  if (!('WEBVR_VOICE_NAV' in window)) {
     return;
   }
-  if (annyang.addItems) {
-    annyang.addItems([
-      {
-        title: 'Carnival Globe Trees',
-        slug: 'carnivalglobetrees'
-      },
-      {
-        title: 'Meditation Orbs',
-        slug: 'meditationorbs'
-      },
-      {
-        title: 'Moss March',
-        slug: 'mossmarch'
-      },
-      {
-        title: 'Over Water',
-        slug: 'overwater'
-      },
-      {
-        title: 'Redwood Dusk',
-        slug: 'redwooddusk'
-      },
-      {
-        title: 'Sequoia Scene',
-        slug: 'sequoiascene'
-      },
-      {
-        title: 'Space Blob Towers',
-        slug: 'spaceblobtowers'
-      },
-      {
-        title: 'Dark Lotus',
-        slug: 'darklotus'
-      }
-    ]);
-  }
+  WEBVR_VOICE_NAV.addItems([
+    {
+      title: 'The Original Scene',
+      slug: 'tos',
+      url: '/~cvan/tos/',
+      keywords: []
+    }
+  ]);
 })();
