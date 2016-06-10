@@ -6,6 +6,7 @@
     updateVRDisplays: updateVRDisplays,
     audio: function () {},
     speech: function () {},
+    storage: storage,
     utils: {},
     version: '1.0.0'
   };
@@ -52,15 +53,15 @@
   };
 
   /**
-   * Wraps sessionStorage/STORAGE_STORE['
-']   *
+   * Wraps sessionStorage/localStorage.
+   *
    * Automatically serialises and deserialises JSON.
    * Has handler for when storage gets full.
    *
    * @param {Object=} [opts={persistent: false, {detail: <el>}}]
    *   Data to pass as options.
    */
-  webvrCommander.utils.storage = function (opts) {
+  var storage = webvrCommander.utils.storage = function (opts) {
     opts = opts || {};
     var STORAGE_STORE = opts.persistent ? window.localStorage : window.sessionStorage;
     if ('store' in opts) {
@@ -79,11 +80,22 @@
 
     return {
       clear: function () {
-        STORAGE_STORE['clear']();
+        try {
+          STORAGE_STORE['clear']();
+        } catch (e) {
+          console.warn('[webvr-commander][storage] Could not clear', e);
+          return;
+        }
       },
       getItem: function (key) {
-        var value = STORAGE_STORE['getItem'](formatKey(key));
-        // Handle nulls, maybe other stray values.
+        var value;
+        try {
+          value = STORAGE_STORE['getItem'](formatKey(key));
+        } catch (e) {
+          console.warn('[webvr-commander][storage] Could not get', key, 'item', e);
+          return;
+        }
+        // Handle nulls/stray values.
         try {
           return JSON.parse(value);
         } catch (e) {
@@ -91,19 +103,25 @@
         }
       },
       removeItem: function (key) {
-        STORAGE_STORE['removeItem'](formatKey(key));
+        try {
+          STORAGE_STORE['removeItem'](formatKey(key));
+        } catch (e) {
+          console.warn('[webvr-commander][storage] Could not remove', key, 'item', e);
+        }
       },
       setItem: function (key, value) {
         try {
           STORAGE_STORE['setItem'](formatKey(key), JSON.stringify(value));
         } catch (e) {
           // Clear localStorage if the quota was reached.
-          if (e.name == 'QuotaExceededError' ||
-            e.name == 'NS_ERROR_DOM_QUOTA_REACHED') {
+          if (e.name === 'QuotaExceededError' ||
+              e.name === 'NS_ERROR_DOM_QUOTA_REACHED') {
             console.log('storage full, clearing');
             STORAGE_STORE['clear']();
             fireEvent(window, 'vr-storage-full-cleared');
             window.location.reload();
+          } else {
+            console.warn('[webvr-commander][storage] Could not set', key, 'item', e);
           }
         }
       }
