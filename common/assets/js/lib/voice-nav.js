@@ -135,12 +135,9 @@
       }
     }
 
-    // // OPTIONAL: activate debug mode for detailed logging in the console.
-    annyang.debug();
+    // OPTIONAL: activate debug mode for detailed logging in the console.
+    // annyang.debug();
 
-    // // OPTIONAL: Set a language for speech recognition (defaults to English)
-    // // For a full list of language codes, see the documentation:
-    // // https://github.com/TalAter/annyang/blob/master/docs/FAQ.md#what-languages-are-supported
     annyang.setLanguage(document.documentElement.getAttribute('lang') || 'en');
 
     Object.keys(speechCmds).forEach(function (key) {
