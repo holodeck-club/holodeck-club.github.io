@@ -7,13 +7,10 @@
   "background_color": "#4aa",
   "icons": [
     {
-      "src": "https://aframe.io/images/aframe-logo-152.png",
-      "sizes": "152x152",
-      "type": "image/png"
-    }, {
-      "src": "https://aframe.io/images/aframe-logo-192.png",
-      "sizes": "192x192",
-      "type": "image/png"
+      "src": "/assets/images/holodeck-club.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "position": "100% 100%"
     }
   ],
   "prefer_related_applications": false,
@@ -23,7 +20,8 @@
       "aframe-href-component",
       "annyang",
       "https://holodeck.club/common/assets/js/lib/voice-nav.js",
-      "assets/js/voice-controls.js"
+      "/common/assets/js/voice-controls.js",
+      "/common/assets/js/lib/webvr-commander.js"
     ]
   }
 }
