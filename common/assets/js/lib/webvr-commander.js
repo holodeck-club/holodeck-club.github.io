@@ -74,10 +74,16 @@
       // TODO: Use an` <iframe>` with a Service Worker to store
       // in `window.caches` and then `postMessage` the info back
       // (instead of relying on `sessionStorage` for this origin).
+      //
+      // TODO: Address in spec `navigator.activeVRDisplay` vs.
+      // `navigator.activeVRDisplay`. And make sure it persists
+      // between (cross-origin) page navigations, but not browser
+      // sessions (à la browser history/{push,pop}State).
       if (activeVRDisplay && db) {
-        db.setItem('activeVRDisplay',
-          activeVRDisplay.displayId + ':' +
-          activeVRDisplay.displayName);
+        db.setItem('activeVRDisplay', {
+          displayId: activeVRDisplay.displayId,
+          displayName: activeVRDisplay.displayName
+        });
       } else {
         db.removeItem('activeVRDisplay');
       }
