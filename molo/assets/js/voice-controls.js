@@ -13,7 +13,8 @@
     {
       title: 'Droids Hunter',
       slug: 'droidshunter',
-      url: '/mozillavr/droidshunter/'
+      url: '/mozillavr/droidshunter/',
+      keywords: ['droid', 'shooting', 'shooter', 'shoot']
     },
     {
       title: 'Dynamic Lights',

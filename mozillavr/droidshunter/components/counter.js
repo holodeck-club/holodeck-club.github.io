@@ -2,7 +2,6 @@
 'use strict';
 
 function TextAnimatedCanvas (text, fontSize, w, h, color, bg, bold, textAlign) {
-  THREE.Object3D.call(this);
   this.myFontSize = fontSize;
   this.w = w;
   this.h = h;
@@ -19,30 +18,8 @@ function TextAnimatedCanvas (text, fontSize, w, h, color, bg, bold, textAlign) {
   this.canvas.width = this.w;
   this.canvas.height = this.h;
 
-  var texture = this.drawText(text);
-  var materialTextCanvas = new THREE.MeshLambertMaterial({
-    side: THREE.DoubleSide,
-    emissive: 0xffffff,
-    emissiveIntensity: 100,
-    depthWrite: false,
-    depthTest: true,
-    transparent: true,
-    opacity: 0.4,
-    map: texture
-  });
-  this.mesh = new THREE.Mesh(
-    new THREE.PlaneBufferGeometry(w / 100, h / 100),
-    materialTextCanvas
-  );
-
-  this.add(this.mesh);
+  this.drawText(text);
 }
-
-TextAnimatedCanvas.prototype = Object.create(THREE.Object3D.prototype);
-
-TextAnimatedCanvas.prototype.updateText = function (text) {
-  this.mesh.material.map = this.drawText(text);
-};
 
 TextAnimatedCanvas.prototype.drawText = function (text) {
   this.text = text;
@@ -54,6 +31,8 @@ TextAnimatedCanvas.prototype.drawText = function (text) {
     context.fillStyle = 'rgba(0,0,0,0.2)';
     context.fillRect(0, 0, this.canvas.width, this.canvas.height);
   }
+  context.fillStyle = 'rgba(0,0,0,1)';
+  context.fillRect(0, 0, this.canvas.width, this.canvas.height);
 
   if (this.bold) {
     context.font = 'bold ' + this.myFontSize + 'px Helvetica';
@@ -82,12 +61,13 @@ TextAnimatedCanvas.prototype.drawText = function (text) {
   }
 
   // use canvas contents as a texture
-  var texture = new THREE.Texture(this.canvas);
-  texture.needsUpdate = true;
-  texture.minFilter = THREE.LinearFilter;
-  texture.magFilter = THREE.LinearFilter;
 
-  return texture;
+  this.texture = new THREE.Texture(this.canvas);
+  this.texture.needsUpdate = true;
+  this.texture.minFilter = THREE.LinearFilter;
+  this.texture.magFilter = THREE.LinearFilter;
+
+  return this.texture;
 };
 
 TextAnimatedCanvas.prototype.wrapTextCanvas = function (context, text, x, y, maxWidth, lineHeight) {
@@ -125,42 +105,23 @@ TextAnimatedCanvas.prototype.wrapTextCanvas = function (context, text, x, y, max
 };
 
 AFRAME.registerComponent('counter', {
-  schema: {
-    direction: {type: 'vec3'},
-    speed: {default: 10}
-  },
-
   init: function () {
-    this.level = 0;
-    this.points = 0;
-    this.lifes = 5;
-
-    this.score = new TextAnimatedCanvas('', 32, 512, 512, '#ffffff', false, false, 'center');
+    this.scoreCanvas = new TextAnimatedCanvas('', 64, 512, 512, '#AAAAAA', false, false, 'center');
     this.updateScore();
-    this.score.position.y = -1;
-    this.el.setObject3D('mesh', this.score);
 
-    this.el.sceneEl.addEventListener('player-hit', this.playerHit.bind(this));
-    this.el.sceneEl.addEventListener('enemy-hit', this.enemyHit.bind(this));
-  },
-
-  playerHit: function () {
-    this.lifes--;
-    if (this.lifes === 0) {
-      this.el.emit('game-over');
-      this.lifes = 0;
-    }
-    this.updateScore();
-  },
-
-  enemyHit: function () {
-    this.points++;
-    this.updateScore();
+    this.el.sceneEl.addEventListener('game-changed', this.updateScore.bind(this));
+    // this.el.sceneEl.addEventListener('player-hit', this.updateScore.bind(this));
+    // this.el.sceneEl.addEventListener('enemy-hit', this.updateScore.bind(this));
   },
 
   updateScore: function () {
-    var scoreText = 'score: ' + this.points + ' \n lifes: ' + this.lifes;
-    this.score.updateText(scoreText);
+    var mesh = this.el.getObject3D('mesh');
+    if (mesh) {
+      var game = this.el.sceneEl.getAttribute('game');
+      var scoreText = '<br><br><br><br>lifes: ' + game.lifes + '<br> score: ' + game.points;
+      var texture = this.scoreCanvas.drawText(scoreText);
+      mesh.children[0].material.map = texture;
+    }
   },
 
   tick: function (time, delta) {

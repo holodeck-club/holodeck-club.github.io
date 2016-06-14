@@ -2,7 +2,7 @@
 AFRAME.registerComponent('enemybullet', {
   schema: {
     direction: {type: 'vec3'},
-    speed: {default: 9}
+    speed: {default: 15}
   },
 
   init: function () {
@@ -13,17 +13,23 @@ AFRAME.registerComponent('enemybullet', {
   tick: function (time, delta) {
     var pos = this.el.getAttribute('position');
     var newPosition = new THREE.Vector3(pos.x, pos.y, pos.z).add(this.direction.clone().multiplyScalar(this.data.speed * delta / 1000));
-    this.el.setAttribute('position', newPosition);
+    if (newPosition.length() > 30) {
+      this.removeBullet();
+      return;
+    }
 
+    this.el.setAttribute('position', newPosition);
     if (this.alive) {
       var head = this.el.sceneEl.camera.el.components['look-controls'].dolly.position;
       if (newPosition.distanceTo(head) < 0.25) {
-        console.log('HIT!!!!!!');
-        document.getElementById('sky').emit('player-hit');
+        // document.getElementById('hurt').emit('player-hit');
         this.el.emit('player-hit');
         this.alive = false;
       }
     }
+  },
+  removeBullet: function () {
+    this.el.parentElement.removeChild(this.el);
   },
 
   remove: function () {
