@@ -32,13 +32,13 @@
       });
     }
 
-    // navigator.serviceWorker.register('/sw.js', {scope: './'})
-    //   .then(waitUntilInstalled)
-    //   .then(function () {
-    //     console.log('service worker installed!');
-    //   }).catch(function (err) {
-    //     console.log('service worker failed!', err);
-    //   });
+    navigator.serviceWorker.register('/sw.js', {scope: './'})
+      .then(waitUntilInstalled)
+      .then(function () {
+        console.log('service worker installed!');
+      }).catch(function (err) {
+        console.log('service worker failed!', err);
+      });
   }
 
   var webvrCommander = {
