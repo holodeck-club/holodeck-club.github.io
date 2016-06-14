@@ -134,10 +134,10 @@ AFRAME.registerSystem('enemy', {
 
     entity.setAttribute('enemy', {
       lifespan: 6 * (Math.random()) + 1,
-      waitingTime: 4 * (Math.random()) + 1,
+      waitingTime: 1000 * (Math.random() + 1),
       startPosition: {x: point[0], y: -10, z: point[2]},
       endPosition: {x: point[0], y: point[1], z: point[2]},
-      chargingDuration: 4 // 2 * Math.random() + 1,
+      chargingDuration: 2000 * (Math.random() + 1),
     });
 
     this.sceneEl.appendChild(entity);
@@ -325,8 +325,11 @@ AFRAME.registerComponent('enemy', {
       }
       return;
     }
-    // var timeOffset = time - this.time;
+
+    var timeOffset = time - this.time;
     var statusTimeOffset = time - this.statusChangeTime;
+
+    // console.log(this.state, time.toFixed(2), statusTimeOffset.toFixed(2));
 
     if (this.state === 'appearing') {
       duration = 2000;
@@ -341,17 +344,46 @@ AFRAME.registerComponent('enemy', {
       }
     } else if (this.state === 'charging') {
       var offset = statusTimeOffset / this.chargingDuration;
-      var sca = offset + 1;
+      var sca = offset/2 + 1 + Math.random() * 0.1;
       this.el.setAttribute('scale', {x: sca, y: sca, z: sca});
-
       if (statusTimeOffset >= this.chargingDuration) {
         this.state = 'shooting';
-        this.el.setAttribute('scale', {x: 1, y: 1, z: 1});
+        //this.el.setAttribute('scale', {x: 1, y: 1, z: 1});
+        this.currentScale = sca;
+
+        this.shootingBackPosition = new THREE.Vector3(
+          this.data.endPosition.x,
+          this.data.endPosition.y,
+          this.data.endPosition.z)
+          .multiplyScalar(1.1);
+
         this.shoot(time);
       }
     } else if (this.state === 'shooting') {
+      var shootingAnimationDuration = 1000;
+      var offset = statusTimeOffset / shootingAnimationDuration;
+      if (offset <= 1.0) {
+        /*
+        offset = offset;
+        var sca = this.currentScale * (1-offset);
+        if (sca < 1.0) {
+          sca= 1.0;
+        }
+        */
+        sca = 1;
+
+        this.el.setAttribute('scale', {x: sca, y: sca, z: sca});
+
+        offset = TWEEN.Easing.Exponential.Out(offset);
+        var pos = this.shootingBackPosition.clone();
+        offset = Math.sin(offset * Math.PI);
+        offset = 1-offset;
+        pos.lerp(this.data.endPosition, offset);
+        this.el.setAttribute('position', pos);
+      }
+
       if (this.waitingTime > 0) {
-        this.waitingTime -= delta / 1000;
+        this.waitingTime -= delta;
         if (this.waitingTime <= 0) {
           this.charge(time);
           this.waitingTime = this.data.waitingTime;
