@@ -31,6 +31,6 @@
     "devDependencies": {}
   },
   "dependencies": {
-    "the-composer": "github:mozvr/the-composer-threejs#prod"
+    "the-composer": "github:fernandojsg/the-composer-threejs#master"
   }
 }
