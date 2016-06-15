@@ -36,6 +36,12 @@
       slug: 'the-composer',
       url: '/molo/teleport/',
       keywords: ['music', 'musical', 'instrument', 'creature', 'cute']
+    },
+    {
+      title: 'Audio Visualizer',
+      slug: 'audio-visualizer',
+      url: '/mozillavr/audio-visualizer/',
+      keywords: ['audio', 'visualizer']
     }
   ]);
 })();
