@@ -12,7 +12,7 @@ var isLocal = false;
 var registryUrls = {
   browserify: isLocal ? 'https://wzrd.in/debug-standalone/' : 'https://wzrd.in/standalone/',
   github: isLocal ? 'https://rawgit.com/' : 'https://cdn.rawgit.com/',
-  npm: 'https://npmcdn.com/'
+  npm: 'https://unpkg.com/'
 };
 var defaultRegistry = 'browserify';
 
